@@ -4,6 +4,7 @@
 
 <h2 align="center"> Improving  Alt Text Capabilities By Leveragingi AI-driven Alt Text Automation </h2>
 <h3 align="center"> Neeraj P Yetheendran (NXPY) </h3>
+
 -- --
 
 # Table of content
