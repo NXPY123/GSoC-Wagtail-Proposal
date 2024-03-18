@@ -1,10 +1,9 @@
-![Wagtail_Banner](<Images/Pasted image 20240307115713.png>)
+![Wagtail Banner](GSoC_Images/Pasted_image_20240307115713.png)
 
 <h1 align="center"> Google Summer Of Code 2024 </h1>
 
 <h2 align="center"> Improving  Alt Text Capabilities By Leveragingi AI-driven Alt Text Automation </h2>
 <h3 align="center"> Neeraj P Yetheendran (NXPY) </h3>
-
 -- --
 
 # Table of content
@@ -21,10 +20,14 @@
 # Abstract
 This proposal is based on the project idea provided in the [GSoC'24 project ideas list](https://github.com/wagtail/gsoc/blob/main/project-ideas.md)
 Currently, Wagtail Users can use Custom Image Model to add an alt text field or by default uses filename/title as alt text. But this is not a recommended practice as [alt text should be tailored to the context where the image is used](https://www.ala.org/support/context-important-alt-text).
-This proposal aims to build a robust, flexible solution to the problem, integrating the capability to add context specific alt text and enforcing them to ensure compliance with current Accessibility standards and promote Accessibility-first development. It also aims to explore the possibilities of integrating LLM models to generate context specific alt text to ensure a more streamlined experience of adopting and integrating Accessibility practices.
+This proposal aims to build a robust, flexible solution to the problem, integrating the capability to add context specific alt text and enforcing them to ensure compliance with current Accessibility standards and promote Accessibility-first development. It also aims to explore the possibilities of integrating Computer Vision algorithms and LLM models to generate context specific alt text to ensure a more streamlined experience of adopting and integrating Accessibility practices.
 
 ## Current State
 Adapting accessibility practices and prioritizing accessibility-first development are crucial for creating inclusive and user-friendly experiences. This approach ensures that everyone, regardless of ability, can access and interact with the website. By building with accessibility in mind, products become more intuitive and usable for everyone, from those using screen readers to even people with temporary limitations like a broken arm. This caters to a larger user base and plays an extremely crucial role in empowering them and raising awareness on their issues.
+
+For example, consider this image ([source](https://arxiv.org/pdf/2305.14779.pdf)) that requires textual context to write accurate alt-text for. Without conditioning on the tweet text, the election flyers are indistinguishable from books to a traditional captioning system
+![](GSoc_Images/Pasted_image_20240317190403.png)
+		
 
 In 2020, [WebAIM](https://webaim.org/) analyzed one million home pages for accessibility issues. According to their report:
 - 98.1% Home Pages With At Least One WCAG 2.0 Failure
@@ -34,14 +37,14 @@ An estimated 1 Billion people have disabilities worldwide (including visual, hea
 
 According to a screen reader user survey conducted by WebAIM:
 - Perception of the state of web accessibility decreased slightly since 2021. Respondents without disabilities tend to be more positive about recent progress (45.9% thought it has become more accessible) than those with disabilities (33.4% thought it has become more accessible).
-	![Web Accessibility Progress Pie Graph](<Images/Pasted image 20240316154856.png>)
+	![Web Accessibility Progress Pie Graph](GSoC_Images/Pasted_image_20240316154856.png)
 - For the question: "Which of the following do you think would have a bigger impact on improvements to web accessibility?", more respondents have answered "better web sites" over time—68.6% of respondents in October 2009, 75.8% in December 2010, 81.3% in January 2014, 85.3% in 2021, and now 85.9% on this survey. This change may reflect improvements in assistive technology. It certainly indicates that users expect more accessible web sites.
-	![More assitive technology/ More accessible web sites, which has a bigger impact on improvements to web accessibility? pie chart ](<Images/Pasted image 20240316154645.png>)
+	![More assitive technology/ More accessible web sites, which has a bigger impact on improvements to web accessibility? pie chart](GSoC_Images/Pasted_image_20240316154645.png)
 - The majority (67%) of respondents never or rarely contact web site owners about barriers. Respondents without disabilities reported nearly the same likelihood to contact website owners as respondents with disabilities.
 - After steady decreases in the frequent usage of landmarks/regions was seen from 2014 (43.8%) to 2021 (25.6%). In 2024 the reported frequent usage has now increased to 31.8%.
-	![How often do you navigate by landmark/regions in your screen reader? Pie Chart](<Images/Pasted image 20240316155012.png>)
+	![How often do you navigate by landmark/regions in your screen reader? Pie Chart](GSoC_Images/Pasted_image_20240316155012.png)
 - The survey asked respondents to select their most, second most, and third most problematic items from a list. In giving each selected item a weighting, the following chart shows the overall rating of difficulty and frustration for each item.
-	![Most problematic items wrt to accessibility bar graph](<Images/Pasted image 20240316154425.png>)
+	![Most problematic items wrt to accessibility bar graph](GSoC_Images/Pasted_image_20240316154425.png)
 
 	In order, the most problematic items are:
 	1. CAPTCHA - images presenting text used to verify that you are a human user
@@ -57,7 +60,7 @@ According to a screen reader user survey conducted by WebAIM:
 	11. Inaccessible or missing search functionality
 	12. Lack of "skip to main content" or "skip navigation" links
 
-Providing text alternative for non-text content is a major part of ensuring accessibility to visually impaired users. Common practices for ensuring accessibility through alternative text are specified in Web Content Accessibility Guidelines (WCAG) [SC 1.1.1](https://www.w3.org/WAI/WCAG21/Understanding/non-text-content) :
+Providing text alternative for non-text content is a major part of ensuring accessibility to visually impaired users. The concept of alt text dates back to the early days of the internet, providing slow dial-up connections with a text alternative to downloading bandwidth-intensive images. Unfortunately, faster internet speeds made alt text less of a priority for many users. And since these descriptions needed to be added manually by whoever uploaded an image, many photos began to feature no alt text at all — with no recourse for the people who had relied on it. Common practices for ensuring accessibility through alternative text are specified in Web Content Accessibility Guidelines (WCAG) [SC 1.1.1](https://www.w3.org/WAI/WCAG21/Understanding/non-text-content) :
 - Using aria-labelledby to provide a text alternative for non-text content
 - When an image uses color differences to convey information, the text alternative for the image should convey that information. If not, this can cause problems for people who are blind or colorblind because they will not be able to perceive the information conveyed by the color differences.
 - When the non-text content is updated, the text alternative should be updated at the same time. If the text in the text alternative cannot still be used in place of the non-text content without losing information or function, then it does not align to the guidelines because it is no longer a text alternative for the non-text content.
@@ -82,7 +85,7 @@ A majority of websites still do not adapt these practices (or adapt them partial
 
 The following chart shows the number of home page elements detected over the last five WebAIM Million studies:
 
-![Number of home page elements detected over the last five WebAIM Million studies:](<Images/Pasted image 20240316191551.png>)
+![Line Graph showing number of home page elements detected over the last five WebAIM Million studies](GSoC_Images/Pasted_image_20240316191551.png)
 
 Although detected errors have decreased slightly while page complexity has increased notably, the growth of home page elements at alarming rates hinders accessibility progress greatly.
 
@@ -101,7 +104,7 @@ Two of the failures found in the ATAG audit report was  [A.2.1.1 Text Alternati
 The primary goal of this project is to make Wagtail and sites created by it more accessible and compliant with the WCAG by providing support for defining context specific alternate text considering current accessibility best practices, database modelling possibilities, and innovations in the realm of artificial intelligence to automate the creation of image descriptions. 
 
 Some ways to achieve this are:
-- Provide support for different LLMs such as GPT-4, Mistral, Claude  using [`llm` plugins](https://llm.datasette.io/en/stable/plugins/directory.html)
+- Provide support for different LLMs  such as GPT-4, Mistral, Claude  using [`llm` plugins](https://llm.datasette.io/en/stable/plugins/directory.html)
 - Provide setting for specifying AI backends
 - Enhancing accessibility checker functionality to rate an image's alternate text 
 - Ensuring alt text generation is cost-effective/negligible compared to overall site maintenance costs
@@ -122,6 +125,34 @@ By the end of this project, we expect Wagtail to produce better results in the A
 Overall, better accessibility practices can lead to a more inclusive, considerate, and more accessible system.
 
 # Project Plan and Implementation
+
+**Note**: The code samples/snippets included are for demonstration purposes only; actual implementation could differ.
+
+The fundamental issues a solution should consider are the following:
+- Cost of various AI Backend options
+- Cost of hosting alternate Open Source backends
+- Database/Model design choices 
+- Determining the context for an image
+- Integration with Accessibility Checker
+- Determining the extent of involvement and intervention of the content editor
+- Determining Wagtail default implementation
+- Text generation in different languages
+
+## Relevant Research
+There have been several works in the recent past exploring solutions to the problem of generating text using multimodal inputs. The creation of transformer models, Image encoders and language model decoders have made significant strides in developing solutions to tackle this issue. Here we'll be exploring how AI Models generate text from multimodal inputs to get a better idea on how our solution should be designed.
+
+One method ( proposed in [Alt-Text with Context: Improving Accessibility for Images on Twitter](https://arxiv.org/abs/2305.14779)) is using an image encoder (in this case, CLIP (Radford et al., 2021)) to produce a vector embedding of the image which is then projected to a sequence of embeddings that occupy the same dimensionality as word embeddings and supplementing them with embedding of the contextual text (in this case, the tweet text)  in the hopes that these two information sources will provide meaningfully non-overlapping signal to the decoder, in order to produce more accurate captions.
+
+![Overview of the alt-text model. An image is encoded via CLIP to obtain an embedding of visual features. This gets projected via a mapping network into word embedding space, where it is then concatenated with an embedded representation of the text from the corresponding tweet. This prefix is passed to a finetuned GPT-2 which autoregressively generates the alt-text caption.](GSoC_Images/Pasted_image_20240317200241.png)
+
+The image $x$ is passed through a pretrained CLIP image encoder, and the output is projected to a word embedding space using a mapping network. This is parameterized by a multi-layer perceptron that takes in a 512 dimensional vector CLIP embedding and outputs a $k$ long sequence of 768 dimensional vectors (the same size GPT-2 expects for each token). These embeddings constitute a prefix $p$ which is the correct shape to be passed to GPT-2.
+
+Having obtained $p$, a sequence of token embedding-esque vectors, the procedure for combining it with the tweet text to produce a prefix containing both visual and textual information is fairly straightforward. The projection is simply concatenated with the embedded tweet text t (note that they are both sequences in word embedding space) to obtain the complete prefix $p ⊕ t$. We can condition on this, treating it as something analogous to a multimodal prompt to our language model, which then autoregressively outputs the alt-text caption $\hat{y}$. Our decoder can therefore condition both on the tweet text, which is the same modality as its output, and the image itself which is not.
+
+## AI Backend Options
+A model solving the issue should be capable of handling multimodal inputs.
+
+## Precedent Works
 
 ## 6. About Me
 
