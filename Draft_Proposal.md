@@ -4,6 +4,7 @@
 
 <h2 align="center"> Improving  Alt Text Capabilities By Leveragingi AI-driven Alt Text Automation </h2>
 <h3 align="center"> Neeraj P Yetheendran (NXPY) </h3>
+
 -- --
 
 # Table of content
@@ -79,7 +80,8 @@ The adaption of accessibility features have gained more acceptance in the recent
 
 Certain countries have also made specific legislation governing the need for websites serving their population to be accessible - for example [EN 301 549](https://www.etsi.org/deliver/etsi_en/301500_301599/301549/02.01.02_60/en_301549v020102p.pdf) in the EU, [Section 508 of the Rehabilitation Act](https://www.section508.gov/training/) in the US, [Federal Ordinance on Barrier-Free Information Technology](https://www.einfach-fuer-alle.de/artikel/bitv_english/) in Germany, the [Accessibility Regulations 2018](https://www.legislation.gov.uk/uksi/2018/952/introduction/made) in the UK, [Accessibilità](https://www.agid.gov.it/it/design-servizi/accessibilita) in Italy, the [Disability Discrimination Act](https://humanrights.gov.au/our-work/disability-rights/world-wide-web-access-disability-discrimination-act-advisory-notes-ver) in Australia, etc. The W3C keeps a list of [Web Accessibility Laws & Policies](https://www.w3.org/WAI/policies/) by country. 
 
-The W3C has published a large and very detailed document that includes very precise, technology-agnostic criteria for accessibility conformance. These are called the [Web Content Accessibility Guidelines](https://www.w3.org/WAI/standards-guidelines/wcag/) (WCAG). The criteria are split up into four main categories, which specify how implementations can be made perceivable, operable, understandable, and robust. 
+The W3C has published a large and very detailed document that includes very precise, technology-agnostic criteria for accessibility conformance. These are called the [Web Content Accessibility Guidelines](https://www.w3.org/WAI/standards-guidelines/wcag/) (WCAG). The criteria are split up into four main categories, which specify how implementations can be made perceivable, operable, understandable, and robust.
+The [Alt Decision Tree Tool](https://www.w3.org/WAI/tutorials/images/decision-tree/) provides a guide on where and how to provide alt text.
 
 A majority of websites still do not adapt these practices (or adapt them partially). Across the one million home pages WebAIIM conducted an accessibility evaluation on, 49,991,225 distinct accessibility errors were detected—an average of 50.0 errors per page. 4.8% of all home page elements had a detected accessibility error. Users with disabilities would expect to encounter errors on 1 in every 21 home page elements with which they engage. 96.3% of home pages had detected WCAG 2 failures!. This improved very slightly from 96.8% in 2022. Over the last 4 years, the pages with detectable WCAG failures has decreased by only 1.5% from 97.8%. The home pages tested had over 1 billion page elements. Home page complexity increased significantly in 12 months, from an average of 955 elements in February 2022 to an average of 1050 elements per home page in February 2023 - a 10% increase.
 
@@ -117,7 +119,9 @@ By the end of this project, we expect Wagtail to produce better results in the A
 - This helps people who have difficulty perceiving visual content. 
 - Text alternatives may help some people who have difficulty understanding the meaning of photographs, drawings, and other images (e.g., line drawings, graphic designs, paintings, three-dimensional representations), graphs, charts, animations, etc.
 - People who are deaf, are hard of hearing, or who are having trouble understanding audio information for any reason can read the text presentation. Research is ongoing regarding automatic translation of text into sign language.
+- Displays text if an image does not load.
 - People who are deaf-blind can read the text in braille.
+- The `alt` attribute helps with Search Engine Optimization. Google uses alt text along with computer vision algorithms and the contents of the page to understand the subject matter of the image ([source]([https://support.google.com/webmasters/answer/114016](https://support.google.com/webmasters/answer/114016))).
 - Additionally, text alternatives support the ability to search for non-text content and to repurpose content in a variety of ways.
 - By ensuring better accessibility practices are enforced, we move one step closer to an inclusive world.
 - A large user base who's needs have been ignored and met with indifference historically will be less apprehensive about adopting technology as part of their daily life. 
@@ -141,7 +145,7 @@ The fundamental issues a solution should consider are the following:
 ## Relevant Research
 There have been several works in the recent past exploring solutions to the problem of generating text using multimodal inputs. The creation of transformer models, Image encoders and language model decoders have made significant strides in developing solutions to tackle this issue. Here we'll be exploring how AI Models generate text from multimodal inputs to get a better idea on how our solution should be designed.
 
-One method ( proposed in [Alt-Text with Context: Improving Accessibility for Images on Twitter](https://arxiv.org/abs/2305.14779)) is using an image encoder (in this case, CLIP (Radford et al., 2021)) to produce a vector embedding of the image which is then projected to a sequence of embeddings that occupy the same dimensionality as word embeddings and supplementing them with embedding of the contextual text (in this case, the tweet text)  in the hopes that these two information sources will provide meaningfully non-overlapping signal to the decoder, in order to produce more accurate captions.
+One method (proposed in [Alt-Text with Context: Improving Accessibility for Images on Twitter](https://arxiv.org/abs/2305.14779)) is using an image encoder (in this case, CLIP (Radford et al., 2021)) to produce a vector embedding of the image which is then projected to a sequence of embeddings that occupy the same dimensionality as word embeddings and supplementing them with embedding of the contextual text (in this case, the tweet text)  in the hopes that these two information sources will provide meaningfully non-overlapping signal to the decoder, in order to produce more accurate captions.
 
 ![Overview of the alt-text model. An image is encoded via CLIP to obtain an embedding of visual features. This gets projected via a mapping network into word embedding space, where it is then concatenated with an embedded representation of the text from the corresponding tweet. This prefix is passed to a finetuned GPT-2 which autoregressively generates the alt-text caption.](GSoC_Images/Pasted_image_20240317200241.png)
 
@@ -149,10 +153,42 @@ The image $x$ is passed through a pretrained CLIP image encoder, and the output 
 
 Having obtained $p$, a sequence of token embedding-esque vectors, the procedure for combining it with the tweet text to produce a prefix containing both visual and textual information is fairly straightforward. The projection is simply concatenated with the embedded tweet text t (note that they are both sequences in word embedding space) to obtain the complete prefix $p ⊕ t$. We can condition on this, treating it as something analogous to a multimodal prompt to our language model, which then autoregressively outputs the alt-text caption $\hat{y}$. Our decoder can therefore condition both on the tweet text, which is the same modality as its output, and the image itself which is not.
 
-## AI Backend Options
-A model solving the issue should be capable of handling multimodal inputs.
+Another method (proposed in [CoCa: Contrastive Captioners are Image-Text Foundation Models](https://arxiv.org/abs/2205.01917)) explores using single-encoder, dual-encoder and encoder-decoder paradigms, and training one image-text foundation model that subsumes the capabilities of all three approaches. Dual-encoder models exhibit remarkable zero-shot image classification capabilities but are less effective for joint vision-language understanding. On the other hand, encoder-decoder methods are good at image captioning and visual question answering but cannot perform retrieval-style tasks. _Contrastive Captioner_ (CoCa) is a novel encoder-decoder approach that simultaneously produces aligned unimodal image and text embeddings and joint multimodal representations, making it flexible enough to be directly applicable for all types of downstream tasks.
 
-## Precedent Works
+![Detailed illustration of CoCa architecture and training objectives.](GSoc_Images/Pasted_image_20240318124241.png)
+## AI Backend Options
+A model solving the issue should be capable of handling multimodal inputs. Image-Text(Multimodal models) Foundation models (or LLMs) can be used for this purpose, and provide easily integrable solutions. Some of the most widely adopted foundation models are GPT-4 from OpenAI, Gemini Pro from Google and Claude-3 from Anthropic. They respectively cost on the order of $0.0076, $0.003 and $0.0048 per image processed (approximately $5-$10 for 1000 image description requests. Gemini API is free for now with upto 60 requests per minute and will have a pay-as-you-go option in the future).
+
+| Company | 1M Input | 1M Output |
+| -------- | ------- |-------|
+| Replicate (llama-2-70b) | 0.65 | 2.75 |
+| Fireworks (16.B-80B) | 0.70 | 2.80 |
+| Google (Gemini Pro) | 0.25 | 0.50 |
+| Mistral (medium) | 2.70 | 8.09 |
+| OpenAI (GPT-4)  | 10.00 | 30.00 |
+*Note: Data shown in table is susceptible to changes*
+
+Open Source models like [LLaVA](https://github.com/haotian-liu/LLaVA) and [LLama](https://llama.meta.com/) can be run on dev machines locally or hosted on cloud services like [replicate](https://replicate.com/), [runpod](https://www.runpod.io/) and other cloud platforms (AWS,Azure,GCP).
+The estimated cost for deploying Llama2 on a single VM with 4 cores, 8 GB of RAM, and 128 GB of storage is around $0.16 per hour or $115 per month. However, this is just an estimate, and the actual cost may vary depending on the region, the VM size, and the usage.
+
+Sources:
+https://replicate.com/yorickvp/llava-13b
+https://huggingface.co/spaces/badayvedat/LLaVA
+https://docs.anthropic.com/claude/docs/vision
+https://openai.com/pricing
+https://techcommunity.microsoft.com/t5/ai-machine-learning-blog/deploy-large-language-models-responsibly-with-azure-ai/ba-p/3876792
+## Existing Implementations
+- Facebook uses [Automatic Alt Text](https://tech.facebook.com/artificial-intelligence/2018/6/using-artificial-intelligence-to-help-blind-people-see-facebook/) to generate descriptions of a photo. But AAT only utilises object recognition technology to detail a list of items present in the image, and does not describe the image based on additional context.
+- WordPress recommends the following practices:
+	- Give all HTML `<img>` elements an `alt` attribute
+	- Give any decorative images an empty `alt` attribute ( `alt=""` )
+	- If an `alt` attribute is not inserted in the Media Library, this will be interpreted as `alt=""` in the front end.
+	- If an image contains a link, the `alt` attribute should contain the target of that link (e.g. the post title), and not a description of the image.
+	- When possible, use CSS to insert images that are only decorative, like an icon or ornament
+- Drupal has an [Automatic Alternative Text](https://www.drupal.org/project/auto_alter) module that uses the [Microsoft Azure Cognitive Services API](https://www.microsoft.com/cognitive-services) or [Alttext.ai](https://alttext.ai/solutions/custom#developers) to generate an Alternative Text for images when no Alternative Text has been provided by user. The AAT does not describe the image based on additional context. The Drupal community chose a different route with Drupal 8, where the ALT-text is mandatory, but can be overridden. The philosophy behind this was to make it as difficult to not enter ALT-text than it was to write it. The Drupal community wanted to influence user behaviour to support a more accessible pattern.
+- Plop has received funding from the we4authors project to implement methods allow and enforce contextual alt text for images
+
+
 
 ## 6. About Me
 
